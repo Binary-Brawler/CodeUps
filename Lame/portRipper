@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Lame CodeUp - portRipper - Simple Port Scanner
+# Lame CodeUp - portRipper - Simple Port Scanner w/ service minimal service detection
 # ---------------------------------------------------------------
 # Author    : Chaotic_Guru                                       |
 # Github    : https://github.com/ChaoticHackingNetwork           |
@@ -11,9 +11,13 @@ import sys
 import socket
 import time
 import threading
+from smb.SMBConnection import SMBConnection
+from nmb.NetBIOS import NetBIOS
 
-# take in as args - target,
-# starting and ending port
+netbios = NetBIOS()
+
+# Gather target and set port
+# works for both 139/445
 target = sys.argv[1]
 s_port = int(sys.argv[2])
 e_port = int(sys.argv[3])
@@ -21,6 +25,15 @@ threads = []
 
 
 def bannerGrabber(port):
+    # Check for SMB on port 139 and 445
+    if port in [139, 445]:
+        smb_detected = smbCheck(port)
+        if smb_detected:
+            print(f"[*] Port: {port:<4} is open\n    - SMB Detected!")
+        else:
+            print(f"[*] Port: {port:<4} is open\n    - Banner not available (timeout)")
+        return
+
     # Create socket object, set timeout and connect
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.settimeout(2)
@@ -41,6 +54,20 @@ def bannerGrabber(port):
     else:
         # If the port is closed, skip banner grabbing
         sock.close()
+
+
+def smbCheck(port):
+    try:
+        # Specifiy username, passwd, client_name and server_name
+        conn = SMBConnection("", "", "", "")  # Using anonymous login
+        conn.connect(target, port)
+        if bool(conn) == True:
+            return True
+        conn.close()
+    except TimeoutError as e:
+        return False
+    except:
+        return False
 
 
 def portScannerThreaded():
