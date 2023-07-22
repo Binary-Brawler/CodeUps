@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Lame CodeUp - pinger.py
+# Lame CodeUp - pinger.py - use ICMP to see if target is alive
 # ---------------------------------------------------------------
 # Author    : Chaotic_Guru                                       |
 # Github    : https://github.com/ChaoticHackingNetwork           |
