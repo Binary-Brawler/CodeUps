@@ -1,5 +1,12 @@
 #!/usr/bin/env python3
 
+# Lame CodeUp - portRipper - Simple Port Scanner
+# ---------------------------------------------------------------
+# Author    : Chaotic_Guru                                       |
+# Github    : https://github.com/ChaoticHackingNetwork           |
+# Discord   : https://discord.gg/nv445EX (ChaoticHackingNetwork) | 						 |					 
+# ---------------------------------------------------------------
+
 import sys
 import socket
 import time
