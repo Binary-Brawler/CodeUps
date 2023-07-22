@@ -1,5 +1,12 @@
 #!/usr/bin/env python3
 
+# Lame CodeUp - pinger.py
+# ---------------------------------------------------------------
+# Author    : Chaotic_Guru                                       |
+# Github    : https://github.com/ChaoticHackingNetwork           |
+# Discord   : https://discord.gg/nv445EX (ChaoticHackingNetwork) | 						 |					 
+# ---------------------------------------------------------------
+
 import os
 import socket
 import struct
