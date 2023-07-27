@@ -1,0 +1,36 @@
+#!/usr/bin/env python3
+
+# Lame CodeUp - VPN Sniffer - Raw data decoded, samba version found
+# ---------------------------------------------------------------
+# Author    : Chaotic_Guru                                       |
+# Github    : https://github.com/ChaoticHackingNetwork           |
+# Discord   : https://discord.gg/nv445EX (ChaoticHackingNetwork) | 						 |					 
+# ---------------------------------------------------------------
+
+from scapy.all import sniff
+from scapy.packet import Raw
+
+def decode_bytes(raw_data):
+    try:
+        # Try decoding with UTF-8 (you can change the encoding as needed)
+        decoded_data = raw_data.decode('utf-8')
+    except UnicodeDecodeError:
+        # If UTF-8 decoding fails, fall back to ASCII
+        decoded_data = raw_data.decode('ascii', errors='ignore')
+    return decoded_data
+
+def packet_handler(packet):
+    if packet.haslayer('Raw'):
+        raw_data = packet[Raw].load
+        decoded_data = decode_bytes(raw_data)
+        print(f"Raw bytes: {raw_data}")
+        print(f"Decoded bytes: {decoded_data}\n")
+
+if __name__ == "__main__":
+    interface = "tun0"  # Replace this with your actual VPN interface name
+
+    try:
+        print(f"Sniffing packets on {interface}...\n")
+        sniff(iface=interface, prn=packet_handler, store=False)
+    except KeyboardInterrupt:
+        print("\nPacket capture stopped.")
