@@ -1,0 +1,128 @@
+#!/usr/bin/env python3
+
+import argparse
+from smb.SMBConnection import SMBConnection
+
+# Dialect for SMB1
+SMB_DIALECT = 'NT LM 0.12'
+
+class SmbClient(object):
+    def __init__(self, ip, sharename):
+        # Initialize the SMB client with the IP address and share name
+        self.ip = ip
+        self.username = ""
+        self.password = ""
+        self.sharename = sharename
+
+    def connect(self):
+        try:
+            # Establish an SMB connection to the server
+            if self.password is not None:
+                # Create an SMBConnection object with credentials for authenticated access
+                self.server = SMBConnection(self.username, self.password, '', '', use_ntlm_v2=False, is_direct_tcp=True)
+            else:
+                # Create an SMBConnection object without credentials for guest access
+                self.server = SMBConnection('', '', '', '', use_ntlm_v2=False, is_direct_tcp=True)
+
+            # Set the supported SMB dialects to only SMB1
+            self.server.supported_dialects = [SMB_DIALECT]
+
+            # Connect to the SMB server
+            self.server.connect(self.ip, 139)
+
+        except Exception as e:
+            print(f"An error occurred while connecting to the SMB server: {e}")
+
+    def upload(self, file):
+        # Upload a file to the specified share on the server
+        data = open(file, 'rb')
+        file = '/' + file
+        self.server.storeFile(self.sharename, file, data)
+        print("File has been uploaded")
+
+    def download(self, file):
+        # Download a file from the specified share on the server
+        fileobj = open(file, 'wb')
+        self.server.retrieveFile(self.sharename, file, fileobj)
+        print("File has been downloaded in the current directory")
+
+    def delete(self, file):
+        # Delete a file from the specified share on the server
+        file = '/' + file
+        self.server.deleteFiles(self.sharename, file)
+
+    def list_shares(self):
+        try:
+            # List the available shares on the server
+            share_list = self.server.listShares()
+
+            # Filter the shares based on the provided share name
+            matching_shares = [share for share in share_list if share.name == self.sharename]
+
+            if matching_shares:
+                print(f"Available shares matching '{self.sharename}':")
+                for share in matching_shares:
+
+                    # Get the file and folder listing for the share
+                    file_list = self.server.listPath(share.name, "/")
+
+                    if file_list:
+                        print("Files and folders in the share:")
+                        for file_info in file_list:
+                            print(file_info.filename)
+                    else:
+                        print("The share is empty.")
+            else:
+                print(f"No shares found matching '{self.sharename}'. Available shares:")
+                for share in share_list:
+                    print(share.name)
+
+        except Exception as e:
+            if "Unable to connect to shared device" in str(e):
+                print("Access Denied: You do not have permission to access the shares.")
+                  else:
+                      print(f"An error occurred while listing shares: {e}")
+
+
+
+
+def main():
+    # Parse command-line arguments using argparse
+    parser = argparse.ArgumentParser(description="SMB Ripper: A simple SMB client to interact with shares.")
+    parser.add_argument("ip", help="The IP address of the SMB server.")
+    parser.add_argument("-u", "--username", help="Username for authentication.")
+    parser.add_argument("-p", "--password", help="Password for authentication.")
+    parser.add_argument("-s", "--sharename", default="", help="The name of the share to interact with.")
+    parser.add_argument("-ls", "--list-shares", action="store_true", help="List available shares.")
+    parser.add_argument("-up", "--upload", metavar="FILE", help="Upload a file to the specified share.")
+    parser.add_argument("-d", "--download", metavar="FILE", help="Download a file from the specified share.")
+    parser.add_argument("-del", "--delete", metavar="FILE", help="Delete a file from the specified share.")
+    args = parser.parse_args()
+
+    # Create an SMB client object with the provided IP and share name
+    client = SmbClient(args.ip, args.sharename)
+
+    # Set the username and password for authentication, if provided
+    if args.username:
+        client.username = args.username
+    if args.password:
+        client.password = args.password
+
+    # Connect to the SMB server
+    client.connect()
+
+    # Perform the requested actions based on the provided arguments
+    if args.list_shares:
+        client.list_shares()
+
+    if args.upload:
+        client.upload(args.upload)
+
+    if args.download:
+        client.download(args.download)
+
+    if args.delete:
+        client.delete(args.delete)
+
+if __name__ == "__main__":
+    main()
