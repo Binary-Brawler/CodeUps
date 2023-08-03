@@ -1,0 +1,47 @@
+#!/usr/bin/env python3
+
+from ftplib import FTP
+import argparse
+
+def ftp_operations(host, username, password, list_files, upload_file_path):
+    try:
+        ftp = FTP(host)
+        ftp.login(username, password)
+
+        # Check for anonymous access
+        anonymous_access = (username == "anonymous")
+        print(f"Anonymous Access: {'Available' if anonymous_access else 'Not Available'}")
+
+        # List files
+        if list_files and anonymous_access:
+            print("\nCurrent Directory:", ftp.pwd())
+            files = ftp.nlst()
+            print("\nList of Files:")
+            for file in files:
+                print(file)
+
+        # Attempt to upload a test.html file
+        if upload_file_path and anonymous_access:
+            remote_path = f"/{upload_file_path}"
+            with open(upload_file_path, 'rb') as file:
+                ftp.storbinary(f'STOR {remote_path}', file)
+            print(f"\nUpload Test File: Success")
+
+        ftp.quit()
+    except Exception as e:
+        print("Error:", e)
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="FTP Tool")
+
+    parser.add_argument("host", type=str, help="FTP server host")
+    parser.add_argument("--list", action="store_true", help="List files on the FTP server")
+    parser.add_argument("--upload", type=str, help="Upload a file to the FTP server")
+
+    args = parser.parse_args()
+
+    ftp_host = args.host
+    ftp_username = "anonymous"
+    ftp_password = "anonymous@"
+
+    ftp_operations(ftp_host, ftp_username, ftp_password, args.list, args.upload)
