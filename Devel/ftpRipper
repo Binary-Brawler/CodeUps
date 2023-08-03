@@ -35,8 +35,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="FTP Tool")
 
     parser.add_argument("host", type=str, help="FTP server host")
-    parser.add_argument("--list", action="store_true", help="List files on the FTP server")
-    parser.add_argument("--upload", type=str, help="Upload a file to the FTP server")
+    parser.add_argument("-ls", "--list", action="store_true", help="List files on the FTP server")
+    parser.add_argument("-u", "--upload", type=str, help="Upload a file to the FTP server")
 
     args = parser.parse_args()
 
